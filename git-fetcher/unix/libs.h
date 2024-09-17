@@ -3,6 +3,10 @@
 
 // libraries
 
+#include <dirent.h>
+
+#include <iostream>
+#include <vector>
 
 
 // function declarations
