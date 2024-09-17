@@ -4,6 +4,10 @@
 // libraries
 
 #include <Windows.h>
+#include <shlobj.h>
+
+#include <iostream>
+#include <vector>
 
 // function declarations
 
