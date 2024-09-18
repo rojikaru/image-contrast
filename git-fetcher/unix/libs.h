@@ -3,14 +3,12 @@
 
 // libraries
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <dirent.h>
 
 #include <iostream>
 #include <vector>
-
-
-// function declarations
-
-void git_fetch_folder();
 
 #endif //UNIX_LIBS_H

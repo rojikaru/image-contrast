@@ -6,7 +6,7 @@ int main() {
     std::string folder = browse_folder();
     if (folder.empty()) {
         std::cout << "Empty folder selected.\n";
-        return -1;
+        return 0;
     }
     std::cout << "Selected catalog: " << folder << std::endl;
 
