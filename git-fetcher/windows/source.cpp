@@ -12,7 +12,7 @@ void execute_fetch(const char *folder) {
     ZeroMemory(&pi, sizeof(pi));
 
     // strdup kinda works as a non-const C-string constructor.
-    char *command = strdup("git fetch");
+    char *command = strdup("git fetch origin");
 
     // Start the child process.
     if (!CreateProcess(nullptr,             // No module name (use command line)
@@ -20,7 +20,7 @@ void execute_fetch(const char *folder) {
                        nullptr,             // Process handle not inheritable
                        nullptr,             // Thread handle not inheritable
                        FALSE,               // Set handle inheritance to FALSE
-                       0,                   // No creation flags
+                       CREATE_SUSPENDED,    // Creation flags
                        nullptr,             // Use parent's environment block
                        folder,              // Starting directory
                        &si,                 // Pointer to STARTUPINFO structure
@@ -29,6 +29,24 @@ void execute_fetch(const char *folder) {
         std::cout << "CreateProcess failed (" << GetLastError() << ").\n";
         return;
     }
+
+    // Resume the child process.
+    char prompt;
+    std::cout << "Do you wish to fetch this folder? (y/n) ";
+    std::cin >> prompt;
+
+    if (prompt != 'y') {
+        // Terminate the child process and close its handles
+        TerminateProcess(pi.hProcess, 0);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+
+        std::cout << "Process terminated.\n";
+
+        return;
+    }
+    // else
+    ResumeThread(pi.hThread);
 
     // Wait until child process exits.
     WaitForSingleObject(pi.hProcess, INFINITE);
@@ -49,7 +67,7 @@ static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPAR
     return 0;
 }
 
-std::string BrowseFolder(const std::string &saved_path = "") {
+std::string browse_folder(const std::string &saved_path = "") {
     TCHAR path[MAX_PATH];
 
     const char *path_param = saved_path.c_str();
@@ -113,19 +131,4 @@ std::vector<std::string> catalog_folders(const std::string& catalog) {
     FindClose(hFind);
 
     return folders;
-}
-
-void git_fetch_folder() {
-    // Select folder
-    std::string folder = BrowseFolder();
-    if (folder.empty()) {
-        std::cout << "No folder selected.\n";
-        return;
-    }
-    std::cout << "Selected catalog: " << folder << std::endl;
-    auto folders = catalog_folders(folder);
-    for (const auto &f : folders) {
-        std::cout << "Folder: " << f << std::endl;
-        execute_fetch(f.c_str());
-    }
 }

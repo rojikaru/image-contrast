@@ -13,4 +13,10 @@
 #include "../unix/libs.h"
 #endif
 
+// FUNCTIONS
+
+std::string browse_folder(const std::string &saved_path = "");
+void execute_fetch(const char *folder);
+std::vector<std::string> catalog_folders(const std::string& catalog);
+
 #endif //CROSS_PLATFORM_LIBS_H

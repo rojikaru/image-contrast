@@ -9,8 +9,4 @@
 #include <iostream>
 #include <vector>
 
-// function declarations
-
-void git_fetch_folder();
-
 #endif //WIN_LIBS_H
