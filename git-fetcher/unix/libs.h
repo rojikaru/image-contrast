@@ -10,5 +10,6 @@
 
 #include <iostream>
 #include <vector>
+#include <cstring>
 
 #endif //UNIX_LIBS_H

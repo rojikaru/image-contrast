@@ -3,7 +3,7 @@ using namespace std;
 
 int main() {
     // Select folder
-    std::string folder = browse_folder();
+    const std::string folder = browse_folder();
     if (folder.empty()) {
         std::cout << "Empty folder selected.\n";
         return 0;

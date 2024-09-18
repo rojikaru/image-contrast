@@ -1,3 +1,6 @@
+#include "../common/conditions.h"
+#if win_defined
+
 #include "libs.h"
 
 void execute_fetch(const char *folder) {
@@ -132,3 +135,5 @@ std::vector<std::string> catalog_folders(const std::string& catalog) {
 
     return folders;
 }
+
+#endif
