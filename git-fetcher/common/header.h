@@ -9,8 +9,8 @@
 
 #if win_defined
 #include "../windows/libs.h"
-#elif unix_defined
-#include "../unix/libs.h"
+#elif linux_defined
+#include "../linux/libs.h"
 #endif
 
 // FUNCTIONS

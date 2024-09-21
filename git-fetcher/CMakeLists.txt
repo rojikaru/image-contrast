@@ -8,4 +8,4 @@ add_executable(os_lab1 main.cpp
         common/conditions.h
         common/header.h
         windows/source.cpp
-        unix/source.cpp)
+        linux/source.cpp)

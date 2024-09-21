@@ -11,8 +11,7 @@ int main() {
     std::cout << "Selected catalog: " << folder << std::endl;
 
     // Execute fetch for each subfolder
-    auto folders = catalog_folders(folder);
-    for (const auto &f : folders) {
+    for (auto folders = catalog_folders(folder); const auto &f : folders) {
         std::cout << "Folder: " << f << std::endl;
         execute_fetch(f.c_str());
     }
