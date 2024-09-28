@@ -1,4 +1,5 @@
-#include <format>
+#include "../common/conditions.h"
+#if unix_defined
 
 #include "libs.h"
 
@@ -94,3 +95,5 @@ std::string browse_folder(const std::string& saved_path = "")
     }
     return folder;
 }
+
+#endif

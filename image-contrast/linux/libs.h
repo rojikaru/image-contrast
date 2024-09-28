@@ -9,8 +9,7 @@
 #include <dirent.h>
 #include <format>
 
-#include <iostream>
-#include <vector>
+#include <stdio.h>
 #include <cstring>
 
 #endif //UNIX_LIBS_H
