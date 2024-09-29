@@ -5,7 +5,7 @@ int main() {
     fs::remove_all("../outputs");
     fs::create_directory("../outputs");
 
-    constexpr int numThreads = 10;
+    constexpr int numThreads = 1;
     constexpr double factor = 1.7;
 
     change_contrast(

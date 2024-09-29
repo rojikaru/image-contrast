@@ -8,7 +8,6 @@
 #include <string>
 #include <stdexcept>
 #include <iostream>
-#include <mutex>
 
 #include <Windows.h>
 #include <gdiplus.h>

@@ -30,7 +30,7 @@ DWORD WINAPI adjust_contrast_thread(LPVOID lpParameter) {
             int b = clamp(int((color.GetB() - 128) * factor) + 128, 0, 255);
 
             // Update the pixel color
-                bmp->SetPixel(x, y, Color(color.GetA(), r, g, b));
+            bmp->SetPixel(x, y, Color(color.GetA(), r, g, b));
         }
     }
 
