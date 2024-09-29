@@ -5,6 +5,12 @@
 
 #include "conditions.h"
 
+#include <vector>
+#include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
 // PLATFORM SPECIFIC HEADERS
 
 #if win_defined
@@ -14,7 +20,11 @@
 #endif
 
 // FUNCTIONS
-
-
+void change_contrast(
+        const vector<wstring> &input,
+        const vector<wstring> &output,
+        double factor = 1.0,
+        int numThreads = 1
+);
 
 #endif //CROSS_PLATFORM_LIBS_H

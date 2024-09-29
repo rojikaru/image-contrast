@@ -3,13 +3,6 @@
 
 // libraries
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <dirent.h>
-#include <format>
-
-#include <stdio.h>
-#include <cstring>
+#include <X11/Xlib.h>
 
 #endif //UNIX_LIBS_H

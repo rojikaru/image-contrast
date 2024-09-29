@@ -3,10 +3,17 @@
 
 // libraries
 
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <stdexcept>
+#include <iostream>
+#include <mutex>
+
 #include <Windows.h>
-#include <shlobj.h>
+#include <gdiplus.h>
 
-#include <stdio.h>
-
+using namespace Gdiplus;
+using namespace std;
 
 #endif //WIN_LIBS_H
