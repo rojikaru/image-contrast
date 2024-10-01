@@ -1,5 +1,5 @@
 #include "../common/conditions.h"
-#if unix_defined
+#if linux_defined
 
 struct ThreadArgs {
     Mat *img;
