@@ -10,14 +10,14 @@ int main() {
 
     change_contrast(
             {
-                    L"../inputs/input1.jpg",
-                    L"../inputs/input2.jpg",
-                    L"../inputs/input3.jpg"
+                    "../inputs/input1.jpg",
+                    "../inputs/input2.jpg",
+                    "../inputs/input3.jpg"
             },
             {
-                    L"../outputs/output1.jpg",
-                    L"../outputs/output2.jpg",
-                    L"../outputs/output3.jpg"
+                    "../outputs/output1.jpg",
+                    "../outputs/output2.jpg",
+                    "../outputs/output3.jpg"
             },
             factor,
             numThreads

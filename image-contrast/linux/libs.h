@@ -3,6 +3,13 @@
 
 // libraries
 
-#include <X11/Xlib.h>
+#include <opencv2/opencv.hpp>
+
+#include <pthread.h>
+
+#include <stdexcept>
+#include <vector>
+#include <tuple>
+#include <string>
 
 #endif //UNIX_LIBS_H
