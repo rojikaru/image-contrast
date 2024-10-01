@@ -3,6 +3,11 @@ project(image_contrast)
 
 set(CMAKE_CXX_STANDARD 20)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
+find_package(OpenCV REQUIRED)
+
 add_executable(image_contrast main.cpp
         windows/libs.h
         common/conditions.h
@@ -10,6 +15,4 @@ add_executable(image_contrast main.cpp
         windows/source.cpp
         linux/source.cpp)
 
-if (WIN32)
-    target_link_libraries(image_contrast PRIVATE gdiplus)
-endif()
+target_link_libraries(image_contrast ${CONAN_LIBS} ${OpenCV_LIBS})

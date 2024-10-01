@@ -21,8 +21,8 @@ namespace fs = std::filesystem;
 
 // FUNCTIONS
 void change_contrast(
-        const vector<wstring> &input,
-        const vector<wstring> &output,
+        const vector<string> &input,
+        const vector<string> &output,
         double factor = 1.0,
         int numThreads = 1
 );

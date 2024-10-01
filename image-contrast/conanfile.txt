@@ -1,0 +1,8 @@
+[requires]
+opencv/4.10.0
+
+[generators]
+cmake
+
+[options]
+opencv/*:shared=True

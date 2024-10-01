@@ -10,9 +10,9 @@
 #include <iostream>
 
 #include <Windows.h>
-#include <gdiplus.h>
+#include <opencv2/opencv.hpp>
 
-using namespace Gdiplus;
+using namespace cv;
 using namespace std;
 
 #endif //WIN_LIBS_H
