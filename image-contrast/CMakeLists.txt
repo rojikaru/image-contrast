@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.28)
 project(image_contrast)
 
 set(CMAKE_CXX_STANDARD 20)
-
-find_package(OpenCV)
+set(OpenCV_DIR "${CMAKE_CURRENT_SOURCE_DIR}/opencv/build/")
+find_package(OpenCV REQUIRED)
 
 add_executable(${PROJECT_NAME} main.cpp
         windows/libs.h
@@ -14,4 +14,4 @@ add_executable(${PROJECT_NAME} main.cpp
         main.cpp
         linux/source.cpp)
 
-target_link_libraries(${PROJECT_NAME} opencv::opencv)
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
