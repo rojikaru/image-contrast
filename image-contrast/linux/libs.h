@@ -11,5 +11,9 @@
 #include <vector>
 #include <tuple>
 #include <string>
+#include <algorithm>
+
+using namespace std;
+using namespace cv;
 
 #endif //UNIX_LIBS_H

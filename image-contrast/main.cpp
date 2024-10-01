@@ -1,6 +1,5 @@
 #include "common/header.h"
 
-
 int main() {
     fs::remove_all("../outputs");
     fs::create_directory("../outputs");

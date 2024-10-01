@@ -1,17 +1,14 @@
 #include "../common/conditions.h"
 #if linux_defined
 
+#include "libs.h"
+
 struct ThreadArgs {
     Mat *img;
     int startY;
     int endY;
     double factor;
 };
-
-// Clamp function to limit RGB values between 0 and 255
-int clamp(int value, int min, int max) {
-    return (value < min) ? min : (value > max) ? max : value;
-}
 
 void *adjust_contrast_thread(void *lpParameter) {
     auto *args = static_cast<ThreadArgs *>(lpParameter);
