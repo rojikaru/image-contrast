@@ -13,6 +13,7 @@ struct ThreadArgs {
 
 DWORD WINAPI adjust_contrast_thread(LPVOID lpParameter) {
     auto* args = static_cast<ThreadArgs*>(lpParameter);
+
     Mat* img = args->img;
     int startY = args->startY;
     int endY = args->endY;
@@ -30,6 +31,7 @@ DWORD WINAPI adjust_contrast_thread(LPVOID lpParameter) {
         }
     }
 
+    delete args;
     return 0;
 }
 
@@ -42,20 +44,18 @@ void adjust_contrast_multi_threaded(Mat* img, double factor, int numThreads = 1)
     int rowsPerThread = height / numThreads;
 
     vector<HANDLE> threads(numThreads);
-    vector<ThreadArgs> args(numThreads);
 
     for (int i = 0; i < numThreads; ++i) {
-        args[i] = ThreadArgs{
-                img,
-                i * rowsPerThread,
-                (i == numThreads - 1) ? height : (i + 1) * rowsPerThread,
-                factor
-        };
         threads[i] = CreateThread(
                 nullptr,                    // Default security attributes
                 0,                          // Default stack size
-                adjust_contrast_thread,      // Thread function
-                &args[i],                    // Thread parameters
+                adjust_contrast_thread,     // Thread function
+                new ThreadArgs{
+                        img,
+                        i * rowsPerThread,
+                        (i == numThreads - 1) ? height : (i + 1) * rowsPerThread,
+                        factor
+                },                          // Thread parameters
                 0,                          // Default creation flags
                 nullptr                     // Don't need the thread identifier
         );
