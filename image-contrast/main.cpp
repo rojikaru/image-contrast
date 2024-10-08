@@ -4,8 +4,13 @@ int main() {
     fs::remove_all("../outputs");
     fs::create_directory("../outputs");
 
-    constexpr int numThreads = 90;
-    constexpr double factor = .7;
+    int numThreads;
+    double factor;
+
+    cout << "Enter the number of threads: ";
+    cin >> numThreads;
+    cout << "Enter the contrast factor: ";
+    cin >> factor;
 
     // change_contrast(
     //     "../inputs/input3.jpg",
