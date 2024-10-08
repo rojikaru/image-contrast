@@ -3,14 +3,19 @@ project(image_contrast)
 
 set(CMAKE_CXX_STANDARD 20)
 
-if (UNIX)
-    set(OpenCV_DIR "${CMAKE_CURRENT_SOURCE_DIR}/opencv/build/")
-elseif (WIN32)
-    set(OpenCV_DIR "${CMAKE_CURRENT_SOURCE_DIR}/opencv/build/x64/vc16/lib")
-endif ()
+set(OpenCV_DIR "${CMAKE_CURRENT_SOURCE_DIR}/opencv/build/")
 message("OpenCV directory: " ${OpenCV_DIR})
 
+if (WIN32)
+    set(OpenCV_BIN_DIR "${OpenCV_DIR}/x64/vc16/bin")
+    # Copy OpenCV DLLs to the output directory
+    file(GLOB OpenCV_DLLS "${OpenCV_BIN_DIR}/*.dll")
+    file(COPY ${OpenCV_DLLS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+endif ()
+
 find_package(OpenCV REQUIRED)
+
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}
         windows/libs.h
