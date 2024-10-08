@@ -7,9 +7,8 @@ set(OpenCV_DIR "${CMAKE_CURRENT_SOURCE_DIR}/opencv/build/")
 message("OpenCV directory: " ${OpenCV_DIR})
 
 if (WIN32)
-    set(OpenCV_BIN_DIR "${OpenCV_DIR}/x64/vc16/bin")
     # Copy OpenCV DLLs to the output directory
-    file(GLOB OpenCV_DLLS "${OpenCV_BIN_DIR}/*.dll")
+    file(GLOB OpenCV_DLLS "${OpenCV_DIR}/x64/vc16/bin/*.dll")
     file(COPY ${OpenCV_DLLS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif ()
 

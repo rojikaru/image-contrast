@@ -1,3 +1,7 @@
+// ReSharper disable CppParameterMayBeConst
+// ReSharper disable CppLocalVariableMayBeConst
+// ReSharper disable CppFunctionalStyleCast
+
 #include "../common/conditions.h"
 #if linux_defined
 
@@ -10,6 +14,12 @@ struct ThreadArgs {
     double factor;
 };
 
+pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
+
+void destroyMutex(pthread_mutex_t *mutex) {
+    pthread_mutex_destroy(mutex);
+}
+
 void *adjust_contrast_thread(void *lpParameter) {
     auto *args = static_cast<ThreadArgs *>(lpParameter);
 
@@ -21,7 +31,7 @@ void *adjust_contrast_thread(void *lpParameter) {
     int width = img->cols;
     for (int y = startY; y < endY; ++y) {
         for (int x = 0; x < width; ++x) {
-            Vec3b &color = img->at<Vec3b>(y, x);
+            auto &color = img->at<Vec3b>(y, x);
 
             // Adjust RGB values based on the contrast factor
             color[2] = clamp(int((color[2] - 128) * factor) + 128, 0, 255); // R
@@ -29,6 +39,11 @@ void *adjust_contrast_thread(void *lpParameter) {
             color[0] = clamp(int((color[0] - 128) * factor) + 128, 0, 255); // B
         }
     }
+
+    // Add logs after exit
+    pthread_mutex_lock(&logMutex);
+    cout << "Thread " << pthread_self() << " contrast thread finished successfully" << endl;
+    pthread_mutex_unlock(&logMutex);
 
     pthread_exit(nullptr);
 }
@@ -55,7 +70,7 @@ void adjust_contrast_multi_threaded(Mat *img, double factor, int numThreads = 1)
     }
 
     // Wait for all threads to complete
-    for (auto &thread : threads) {
+    for (auto &thread: threads) {
         pthread_join(thread, nullptr);
     }
 }
@@ -84,21 +99,28 @@ void change_contrast(const vector<string> &input, const vector<string> &output, 
     }
 
     vector<pthread_t> threads(input.size());
-    vector<tuple<string, string, double, int>> args(input.size());
+    vector<tuple<string, string, double, int> > args(input.size());
 
     for (size_t i = 0; i < input.size(); ++i) {
         args[i] = make_tuple(input[i], output[i], factor, numThreads);
-        pthread_create(&threads[i], nullptr, [](void *param) -> void * {
-            auto args = *static_cast<tuple<string, string, double, int> *>(param);
-            change_contrast(get<0>(args), get<1>(args), get<2>(args), get<3>(args));
+        pthread_create(&threads[i], nullptr, [](void *param) -> void *{
+            auto t_args = *static_cast<tuple<string, string, double, int> *>(param);
+            change_contrast(
+                get<0>(t_args),
+                get<1>(t_args),
+                get<2>(t_args),
+                get<3>(t_args)
+            );
             pthread_exit(nullptr);
         }, &args[i]);
     }
 
     // Wait for all threads to finish
-    for (auto &thread : threads) {
+    for (auto &thread: threads) {
         pthread_join(thread, nullptr);
     }
+
+    destroyMutex(&logMutex);
 }
 
 #endif
