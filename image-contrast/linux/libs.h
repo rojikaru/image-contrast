@@ -1,5 +1,5 @@
-#ifndef UNIX_LIBS_H
-#define UNIX_LIBS_H
+#ifndef LINUX_LIBS_H
+#define LINUX_LIBS_H
 
 // libraries
 
@@ -16,4 +16,4 @@
 using namespace std;
 using namespace cv;
 
-#endif //UNIX_LIBS_H
+#endif //LINUX_LIBS_H

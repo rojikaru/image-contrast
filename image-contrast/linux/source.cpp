@@ -12,6 +12,7 @@ struct ThreadArgs {
 
 void *adjust_contrast_thread(void *lpParameter) {
     auto *args = static_cast<ThreadArgs *>(lpParameter);
+
     Mat *img = args->img;
     int startY = args->startY;
     int endY = args->endY;

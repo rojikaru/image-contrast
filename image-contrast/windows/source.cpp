@@ -5,16 +5,26 @@
 #include "libs.h"
 
 struct ThreadArgs {
-    Mat* img;
+    Mat *img;
     int startY;
     int endY;
     double factor;
 };
 
-DWORD WINAPI adjust_contrast_thread(LPVOID lpParameter) {
-    auto* args = static_cast<ThreadArgs*>(lpParameter);
+CRITICAL_SECTION logCs;
 
-    Mat* img = args->img;
+void initLog() {
+    InitializeCriticalSection(&logCs);
+}
+
+void destroyLog() {
+    DeleteCriticalSection(&logCs);
+}
+
+DWORD WINAPI adjust_contrast_thread(LPVOID lpParameter) {
+    auto *args = static_cast<ThreadArgs *>(lpParameter);
+
+    Mat *img = args->img;
     int startY = args->startY;
     int endY = args->endY;
     double factor = args->factor;
@@ -22,7 +32,7 @@ DWORD WINAPI adjust_contrast_thread(LPVOID lpParameter) {
     int width = img->cols;
     for (int y = startY; y < endY; ++y) {
         for (int x = 0; x < width; ++x) {
-            auto& color = img->at<Vec3b>(y, x);
+            auto &color = img->at<Vec3b>(y, x);
 
             // Adjust RGB values based on the contrast factor
             color[2] = clamp(int((color[2] - 128) * factor) + 128, 0, 255); // R
@@ -31,11 +41,16 @@ DWORD WINAPI adjust_contrast_thread(LPVOID lpParameter) {
         }
     }
 
+    // Log the thread completion
+    EnterCriticalSection(&logCs);
+    cout << "Thread completed: " << GetCurrentThreadId() << endl;
+    LeaveCriticalSection(&logCs);
+
     delete args;
     return 0;
 }
 
-void adjust_contrast_multi_threaded(Mat* img, double factor, int numThreads = 1) {
+void adjust_contrast_multi_threaded(Mat *img, double factor, int numThreads = 1) {
     if (numThreads < 1) {
         throw invalid_argument("numThreads must be greater than 0");
     }
@@ -43,8 +58,8 @@ void adjust_contrast_multi_threaded(Mat* img, double factor, int numThreads = 1)
     int height = img->rows;
     int rowsPerThread = height / numThreads;
 
+    // Create threads
     vector<HANDLE> threads(numThreads);
-
     for (int i = 0; i < numThreads; ++i) {
         threads[i] = CreateThread(
                 nullptr,                    // Default security attributes
@@ -54,7 +69,7 @@ void adjust_contrast_multi_threaded(Mat* img, double factor, int numThreads = 1)
                         img,
                         i * rowsPerThread,
                         (i == numThreads - 1) ? height : (i + 1) * rowsPerThread,
-                        factor
+                        factor,
                 },                          // Thread parameters
                 0,                          // Default creation flags
                 nullptr                     // Don't need the thread identifier
@@ -65,12 +80,12 @@ void adjust_contrast_multi_threaded(Mat* img, double factor, int numThreads = 1)
     WaitForMultipleObjects(numThreads, threads.data(), TRUE, INFINITE);
 
     // Close thread handles
-    for (HANDLE hThread : threads) {
+    for (HANDLE hThread: threads) {
         CloseHandle(hThread);
     }
 }
 
-void change_contrast(const string& input, const string& output, double factor, int numThreads = 1) {
+void change_contrast(const string &input, const string &output, double factor, int numThreads = 1) {
     if (factor <= 0 || factor > 2) {
         throw invalid_argument("factor must be in range (0, 2]");
     }
@@ -88,7 +103,9 @@ void change_contrast(const string& input, const string& output, double factor, i
     imwrite(output, img);
 }
 
-void change_contrast(const vector<string>& input, const vector<string>& output, double factor, int numThreads) {
+void change_contrast(const vector<string> &input, const vector<string> &output, double factor, int numThreads) {
+    initLog();
+
     if (input.size() != output.size()) {
         throw invalid_argument("input and output size mismatch");
     }
@@ -102,7 +119,7 @@ void change_contrast(const vector<string>& input, const vector<string>& output, 
                 nullptr,
                 0,
                 [](LPVOID param) -> DWORD {
-                    auto args = *static_cast<tuple<string, string, double, int>*>(param);
+                    auto args = *static_cast<tuple<string, string, double, int> *>(param);
                     change_contrast(get<0>(args), get<1>(args), get<2>(args), get<3>(args));
                     return 0;
                 },
@@ -116,9 +133,11 @@ void change_contrast(const vector<string>& input, const vector<string>& output, 
     WaitForMultipleObjects(threads.size(), threads.data(), TRUE, INFINITE);
 
     // Close thread handles
-    for (HANDLE hThread : threads) {
+    for (HANDLE hThread: threads) {
         CloseHandle(hThread);
     }
+
+    destroyLog();
 }
 
 #endif
