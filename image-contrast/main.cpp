@@ -7,6 +7,13 @@ int main() {
     constexpr int numThreads = 90;
     constexpr double factor = .7;
 
+    // change_contrast(
+    //     "../inputs/input3.jpg",
+    //     "../outputs/output3.jpg",
+    //     factor,
+    //     numThreads
+    // );
+
     change_contrast(
             {
                     "../inputs/input1.jpg",

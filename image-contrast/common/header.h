@@ -21,10 +21,17 @@ namespace fs = std::filesystem;
 
 // FUNCTIONS
 void change_contrast(
-        const vector<string> &input,
-        const vector<string> &output,
-        double factor = 1.0,
-        int numThreads = 1
+    const vector<string> &input,
+    const vector<string> &output,
+    double factor = 1.0,
+    int numThreads = 1
+);
+
+void change_contrast(
+    const string &input,
+    const string &output,
+    double factor = 1.0,
+    int numThreads = 1
 );
 
 #endif //CROSS_PLATFORM_LIBS_H

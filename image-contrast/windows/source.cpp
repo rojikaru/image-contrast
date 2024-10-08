@@ -85,7 +85,12 @@ void adjust_contrast_multi_threaded(Mat *img, double factor, int numThreads = 1)
     }
 }
 
-void change_contrast(const string &input, const string &output, double factor, int numThreads = 1) {
+void inner_change_contrast(
+    const string &input,
+    const string &output,
+    double factor,
+    int numThreads = 1
+) {
     if (factor <= 0 || factor > 2) {
         throw invalid_argument("factor must be in range (0, 2]");
     }
@@ -103,12 +108,17 @@ void change_contrast(const string &input, const string &output, double factor, i
     imwrite(output, img);
 }
 
-void change_contrast(const vector<string> &input, const vector<string> &output, double factor, int numThreads) {
-    initLog();
-
+void change_contrast(
+    const vector<string> &input,
+    const vector<string> &output,
+    double factor,
+    int numThreads
+) {
     if (input.size() != output.size()) {
         throw invalid_argument("input and output size mismatch");
     }
+
+    initLog();
 
     vector<HANDLE> threads(input.size());
     vector<tuple<string, string, double, int>> args(input.size());
@@ -120,7 +130,12 @@ void change_contrast(const vector<string> &input, const vector<string> &output, 
                 0,
                 [](LPVOID param) -> DWORD {
                     auto args = *static_cast<tuple<string, string, double, int> *>(param);
-                    change_contrast(get<0>(args), get<1>(args), get<2>(args), get<3>(args));
+                    inner_change_contrast(
+                        get<0>(args),
+                        get<1>(args),
+                        get<2>(args),
+                        get<3>(args)
+                        );
                     return 0;
                 },
                 &args[i],
@@ -138,6 +153,15 @@ void change_contrast(const vector<string> &input, const vector<string> &output, 
     }
 
     destroyLog();
+}
+
+void change_contrast(
+    const string &input,
+    const string &output,
+    double factor,
+    int numThreads = 1
+) {
+    change_contrast(vector{input}, vector{output}, factor, numThreads);
 }
 
 #endif

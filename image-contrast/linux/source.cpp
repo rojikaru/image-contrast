@@ -14,7 +14,7 @@ struct ThreadArgs {
     double factor;
 };
 
-pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t logMutex;
 
 void destroyMutex(pthread_mutex_t *mutex) {
     pthread_mutex_destroy(mutex);
@@ -75,7 +75,12 @@ void adjust_contrast_multi_threaded(Mat *img, double factor, int numThreads = 1)
     }
 }
 
-void change_contrast(const string &input, const string &output, double factor, int numThreads = 1) {
+void inner_change_contrast(
+    const string &input,
+    const string &output,
+    double factor,
+    int numThreads = 1
+) {
     if (factor <= 0 || factor > 2) {
         throw invalid_argument("factor must be in range (0, 2]");
     }
@@ -93,10 +98,17 @@ void change_contrast(const string &input, const string &output, double factor, i
     imwrite(output, img);
 }
 
-void change_contrast(const vector<string> &input, const vector<string> &output, double factor, int numThreads) {
+void change_contrast(
+    const vector<string> &input,
+    const vector<string> &output,
+    double factor,
+    int numThreads
+) {
     if (input.size() != output.size()) {
         throw invalid_argument("input and output size mismatch");
     }
+
+    logMutex = PTHREAD_MUTEX_INITIALIZER;
 
     vector<pthread_t> threads(input.size());
     vector<tuple<string, string, double, int> > args(input.size());
@@ -105,7 +117,7 @@ void change_contrast(const vector<string> &input, const vector<string> &output, 
         args[i] = make_tuple(input[i], output[i], factor, numThreads);
         pthread_create(&threads[i], nullptr, [](void *param) -> void *{
             auto t_args = *static_cast<tuple<string, string, double, int> *>(param);
-            change_contrast(
+            inner_change_contrast(
                 get<0>(t_args),
                 get<1>(t_args),
                 get<2>(t_args),
@@ -121,6 +133,15 @@ void change_contrast(const vector<string> &input, const vector<string> &output, 
     }
 
     destroyMutex(&logMutex);
+}
+
+void change_contrast(
+    const string &input,
+    const string &output,
+    double factor,
+    int numThreads = 1
+) {
+    change_contrast(vector{input}, vector{output}, factor, numThreads);
 }
 
 #endif
