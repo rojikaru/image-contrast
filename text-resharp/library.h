@@ -1,0 +1,6 @@
+#ifndef TEXT_RESHARP_LIBRARY_H
+#define TEXT_RESHARP_LIBRARY_H
+
+void hello();
+
+#endif //TEXT_RESHARP_LIBRARY_H
