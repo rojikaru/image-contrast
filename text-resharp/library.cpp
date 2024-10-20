@@ -1,6 +1,4 @@
-#include "library.h"
-
-#include <iostream>
+#include "common/header.h"
 
 void hello() {
     std::cout << "Hello, World!" << std::endl;
