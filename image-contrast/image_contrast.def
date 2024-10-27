@@ -1,0 +1,3 @@
+LIBRARY "image_contrast"
+EXPORTS
+    change_image_contrast = change_contrast
