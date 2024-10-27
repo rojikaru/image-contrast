@@ -1,4 +1,4 @@
-#include "../common/conditions.h"
+#include "../conditions.h"
 
 #if win_defined
 
@@ -28,8 +28,8 @@ DWORD WINAPI adjust_contrast_thread(LPVOID lpParameter) {
     int startY = args->startY;
     int endY = args->endY;
     double factor = args->factor;
-
     int width = img->cols;
+
     for (int y = startY; y < endY; ++y) {
         for (int x = 0; x < width; ++x) {
             auto &color = img->at<Vec3b>(y, x);
@@ -108,7 +108,7 @@ void inner_change_contrast(
     imwrite(output, img);
 }
 
-void change_contrast(
+void change_contrast_many(
     const vector<string> &input,
     const vector<string> &output,
     double factor,
@@ -156,12 +156,39 @@ void change_contrast(
 }
 
 void change_contrast(
-    const string &input,
-    const string &output,
+    const char *input,
+    const char *output,
     double factor,
     int numThreads = 1
 ) {
-    change_contrast(vector{input}, vector{output}, factor, numThreads);
+    change_contrast_many(vector{string(input)}, vector{string(output)}, factor, numThreads);
+}
+
+void CALLBACK ChangeContrast(
+    HWND hwnd,
+    HINSTANCE hinst,
+    LPSTR lpszCmdLine,
+    int nCmdShow
+) {
+    // Parse the command line arguments
+    vector<string> args;
+    string arg;
+    istringstream iss(lpszCmdLine);
+    while (iss >> arg) {
+        args.push_back(arg);
+    }
+
+    if (args.size() < 4) {
+        cerr << "Usage: ChangeContrast <input> <output> <factor> <numThreads>" << endl;
+        return;
+    }
+
+    change_contrast_many(
+        vector{args[0]},
+        vector{args[1]},
+        stod(args[2]),
+        stoi(args[3])
+    );
 }
 
 #endif

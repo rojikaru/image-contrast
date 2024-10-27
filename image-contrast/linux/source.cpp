@@ -1,8 +1,4 @@
-// ReSharper disable CppParameterMayBeConst
-// ReSharper disable CppLocalVariableMayBeConst
-// ReSharper disable CppFunctionalStyleCast
-
-#include "../common/conditions.h"
+#include "../conditions.h"
 #if linux_defined
 
 #include "libs.h"
@@ -98,7 +94,7 @@ void inner_change_contrast(
     imwrite(output, img);
 }
 
-void change_contrast(
+void change_contrast_many(
     const vector<string> &input,
     const vector<string> &output,
     double factor,
@@ -136,12 +132,12 @@ void change_contrast(
 }
 
 void change_contrast(
-    const string &input,
-    const string &output,
+    const char *input,
+    const char *output,
     double factor,
     int numThreads = 1
 ) {
-    change_contrast(vector{input}, vector{output}, factor, numThreads);
+    change_contrast_many(vector{string(input)}, vector{string(output)}, factor, numThreads);
 }
 
 #endif
