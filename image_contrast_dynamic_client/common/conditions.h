@@ -9,4 +9,10 @@
 #define apple_defined 1
 #endif
 
+#ifdef win_defined
+#define LIB_API __declspec(dllimport)
+#elif linux_defined
+#define LIB_API __attribute__((visibility("default")))
+#endif
+
 #endif //CONDITIONS_H
