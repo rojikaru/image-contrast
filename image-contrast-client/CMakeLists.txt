@@ -5,10 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(IMAGE_CONTRAST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../image-contrast")
 set(IMAGE_CONTRAST_BIN "${IMAGE_CONTRAST_DIR}/cmake-build-debug")
 
-if (WIN32)
-#    add_definitions(-DIMAGE_CONTRAST_DLL_IMPORTS)
-endif ()
-
 add_executable(
         ${PROJECT_NAME}
         main.cpp

@@ -55,8 +55,6 @@ if (IMAGE_CONTRAST_DLL_EXPORTS)
     endif()
 endif ()
 
-
-
 target_link_libraries(
         ${PROJECT_NAME}
         ${OpenCV_LIBS}
