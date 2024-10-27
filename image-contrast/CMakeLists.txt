@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.28)
 project(image_contrast)
 
 set(CMAKE_CXX_STANDARD 20)
+set(IMAGE_CONTRAST_DLL_EXPORTS True)
 
 if (WIN32)
-    set(IMAGE_CONTRAST_DLL_EXPORTS False)
 
     set(OpenCV_DIR "D:/opencv/build")
 
@@ -12,7 +12,7 @@ if (WIN32)
     file(GLOB OpenCV_DLLS "${OpenCV_DIR}/x64/vc16/bin/*.dll")
     file(COPY ${OpenCV_DLLS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 else ()
-    set(OpenCV_DIR "/usr/local/opencv/build")
+    set(OpenCV_DIR "~/Documents/opencv/build")
 endif ()
 
 message("OpenCV directory: " ${OpenCV_DIR})

@@ -22,11 +22,10 @@
 #else
     #if defined(IMAGE_CONTRAST_DLL_EXPORTS) || defined(IMAGE_CONTRAST_DLL_IMPORTS)
     #define IMAGE_CONTRAST_LIB_API __attribute__((visibility("default")))
-    #define IMAGE_CONTRAST_ALIAS(name) __attribute__((alias(name)))
     #else
     #define IMAGE_CONTRAST_LIB_API
-    #define IMAGE_CONTRAST_ALIAS(name)
     #endif
+    #define IMAGE_CONTRAST_ALIAS(name) __attribute__((alias(name)))
 #endif
 
 #endif //IMAGE_CONTRAST_CONDITIONS_H

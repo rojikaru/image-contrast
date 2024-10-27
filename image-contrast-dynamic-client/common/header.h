@@ -7,7 +7,7 @@
 
 #if win_defined
 #include <Windows.h>
-#elif
+#else
 #include <dlfcn.h>
 #endif
 

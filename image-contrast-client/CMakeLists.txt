@@ -20,7 +20,7 @@ if (WIN32)
     file(GLOB OpenCV_DLLS "${OpenCV_DLLS}/*.dll")
     file(COPY ${OpenCV_DLLS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 else ()
-    set(OpenCV_DIR "/usr/local/opencv/build")
+    set(OpenCV_DIR "~/Documents/opencv/build")
 endif ()
 
 find_package(OpenCV REQUIRED)
