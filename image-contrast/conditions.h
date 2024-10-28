@@ -17,8 +17,6 @@
     #else
     #define IMAGE_CONTRAST_LIB_API
     #endif
-
-    #define IMAGE_CONTRAST_ALIAS(name)
 #else
     #if defined(IMAGE_CONTRAST_DLL_EXPORTS) || defined(IMAGE_CONTRAST_DLL_IMPORTS)
     #define IMAGE_CONTRAST_LIB_API __attribute__((visibility("default")))

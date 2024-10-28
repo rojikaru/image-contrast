@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.28)
 project(image_contrast)
 
 set(CMAKE_CXX_STANDARD 20)
-set(IMAGE_CONTRAST_DLL_EXPORTS True)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(IMAGE_CONTRAST_DLL_EXPORTS False)
 
 if (WIN32)
 

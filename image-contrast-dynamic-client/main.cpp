@@ -18,14 +18,14 @@ int main() {
     }
 
 #elif linux_defined
-    // Clear any existing error
-    dlerror();
-
     void *handle = dlopen("./libimage_contrast.so", RTLD_LAZY);
     if (handle == nullptr) {
         cerr << "Failed to load the common library\n" << dlerror() << endl;
         return 1;
     }
+
+    // Clear any existing error
+    dlerror();
 
     change_contrast = reinterpret_cast<ImageContrastFunc>(dlsym(handle, fn_name));
     if (const char *dlsym_error = dlerror()) {

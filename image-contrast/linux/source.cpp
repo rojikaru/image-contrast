@@ -131,7 +131,7 @@ void change_contrast_many(
     destroyMutex(&logMutex);
 }
 
-void change_contrast(
+extern "C" void change_contrast(
     const char *input,
     const char *output,
     double factor,
