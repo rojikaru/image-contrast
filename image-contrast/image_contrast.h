@@ -23,8 +23,8 @@ namespace fs = std::filesystem;
 
 // FUNCTIONS
 void change_contrast_many(
-    const vector<string> &input,
-    const vector<string> &output,
+    const vector<string>& input,
+    const vector<string>& output,
     double factor = 1.0,
     int numThreads = 1
 );
@@ -32,8 +32,8 @@ void change_contrast_many(
 extern "C" {
 IMAGE_CONTRAST_LIB_API
 void change_contrast(
-    const char *input,
-    const char *output,
+    const char* input,
+    const char* output,
     double factor = 1.0,
     int numThreads = 1
 );
@@ -47,13 +47,12 @@ void CALLBACK ChangeContrast(
         int nCmdShow
 );
 #elif defined(linux_defined)
-    // IMAGE_CONTRAST_LIB_API
-    // void change_image_contrast(
-    //     const char *input,
-    //     const char *output,
-    //     double factor = 1.0,
-    //     int numThreads = 1
-    // ) IMAGE_CONTRAST_ALIAS("change_contrast");
+void change_image_contrast(
+    const char* input,
+    const char* output,
+    double factor = 1.0,
+    int numThreads = 1
+);
 #endif
 }
 
