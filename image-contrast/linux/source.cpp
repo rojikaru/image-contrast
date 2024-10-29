@@ -92,10 +92,35 @@ void inner_change_contrast(
         throw invalid_argument("factor must be in range (0, 2]");
     }
 
-    // Load the image from file
-    Mat img = imread(input);
+    // Load the image from memory-mapped file
+    int fd = open(input.c_str(), O_RDONLY);
+    if (fd == -1)
+    {
+        throw invalid_argument("Failed to open input file");
+    }
+
+    struct stat sb;
+    if (fstat(fd, &sb) == -1)
+    {
+        close(fd);
+        throw invalid_argument("Failed to get file size");
+    }
+
+    void* map = mmap(nullptr, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (map == MAP_FAILED)
+    {
+        close(fd);
+        throw invalid_argument("Failed to map input file");
+    }
+
+    Mat img = imdecode(
+        Mat(1, sb.st_size, CV_8UC1, map),
+        IMREAD_COLOR
+    );
     if (img.empty())
     {
+        munmap(map, sb.st_size);
+        close(fd);
         throw invalid_argument("Failed to load input image");
     }
 
@@ -104,6 +129,10 @@ void inner_change_contrast(
 
     // Save the adjusted image
     imwrite(output, img);
+
+    // Clean up
+    munmap(map, sb.st_size);
+    close(fd);
 }
 
 void change_contrast_many(

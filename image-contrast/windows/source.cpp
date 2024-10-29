@@ -96,10 +96,52 @@ void inner_change_contrast(
         throw invalid_argument("factor must be in range (0, 2]");
     }
 
-    // Load the image from file using OpenCV
-    Mat img = imread(input);
+    // Load the image from file using memory-mapped files
+    HANDLE hFile = CreateFile(
+        input.c_str(),
+        GENERIC_READ,
+        0,
+        nullptr,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        nullptr
+    );
+    if (hFile == INVALID_HANDLE_VALUE) {
+      CloseHandle(hFile);
+      throw invalid_argument("failed to open file");
+    }
+
+    HANDLE hMapFile = CreateFileMapping(
+        hFile,
+        nullptr,
+        PAGE_READONLY,
+        0,
+        0,
+        nullptr
+    );
+    if (hMapFile == nullptr) {
+        CloseHandle(hFile);
+        CloseHandle(hMapFile);
+        throw invalid_argument("failed to create file mapping");
+    }
+
+    void* map = MapViewOfFile(
+        hMapFile,
+        FILE_MAP_READ,
+        0,
+        0,
+        0
+    );
+
+    Mat img = imdecode(
+        Mat(1, GetFileSize(hFile, nullptr), CV_8UC1, map),
+        IMREAD_COLOR
+    );
     if (img.empty()) {
-        throw invalid_argument("Failed to load input image");
+        UnmapViewOfFile(map);
+        CloseHandle(hMapFile);
+        CloseHandle(hFile);
+        throw invalid_argument("failed to load image");
     }
 
     // Adjust contrast using multiple threads
@@ -107,6 +149,11 @@ void inner_change_contrast(
 
     // Save the adjusted image
     imwrite(output, img);
+
+    // Clean up
+    UnmapViewOfFile(map);
+    CloseHandle(hMapFile);
+    CloseHandle(hFile);
 }
 
 void change_contrast_many(
