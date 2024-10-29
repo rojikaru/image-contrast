@@ -86,6 +86,88 @@ void adjust_contrast_multi_threaded(Mat *img, double factor, int numThreads = 1)
     }
 }
 
+// Load the image from a file
+Mat read_img(const string &path) {
+    HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        throw std::runtime_error("Failed to open input file");
+    }
+
+    DWORD fileSize = GetFileSize(hFile, nullptr);
+    if (fileSize == INVALID_FILE_SIZE) {
+        CloseHandle(hFile);
+        throw std::runtime_error("Failed to get file size");
+    }
+
+    if (fileSize == 0) {
+        CloseHandle(hFile);
+        throw std::runtime_error("Input file is empty");
+    }
+
+    HANDLE hMapping = CreateFileMapping(hFile, nullptr, PAGE_READONLY, 0, 0, nullptr);
+    if (!hMapping) {
+        CloseHandle(hFile);
+        throw std::runtime_error("Failed to create file mapping");
+    }
+
+    void *map = MapViewOfFile(hMapping, FILE_MAP_READ, 0, 0, 0);
+    if (!map) {
+        CloseHandle(hMapping);
+        CloseHandle(hFile);
+        throw std::runtime_error("Failed to map input file");
+    }
+
+    Mat img = imdecode(Mat(1, fileSize, CV_8UC1, map), IMREAD_COLOR);
+
+    // Clean up
+    UnmapViewOfFile(map);
+    CloseHandle(hMapping);
+    CloseHandle(hFile);
+
+    if (img.empty()) {
+        throw std::runtime_error("Failed to load input image");
+    }
+
+    return img;
+}
+
+// Write the image to a file
+void write_img(const string &path, const Mat &img) {
+    vector<uchar> buf;
+
+    // Encode the image to the buffer
+    string ext = path.substr(path.find_last_of('.'));
+    if (!imencode(ext == ".jpg" || ext == ".jpeg" ? ".jpeg" : ".png", img, buf)) {
+        throw std::runtime_error("Failed to encode image");
+    }
+
+    HANDLE hFile = CreateFileA(path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        throw std::runtime_error("Failed to open output file");
+    }
+
+    HANDLE hMapping = CreateFileMapping(hFile, nullptr, PAGE_READWRITE, 0, buf.size(), nullptr);
+    if (!hMapping) {
+        CloseHandle(hFile);
+        throw std::runtime_error("Failed to create file mapping");
+    }
+
+    void *map = MapViewOfFile(hMapping, FILE_MAP_WRITE, 0, 0, 0);
+    if (!map) {
+        CloseHandle(hMapping);
+        CloseHandle(hFile);
+        throw std::runtime_error("Failed to map output file");
+    }
+
+    // Copy the encoded image data to the mapped memory
+    memcpy(map, buf.data(), buf.size());
+
+    // Clean up
+    UnmapViewOfFile(map);
+    CloseHandle(hMapping);
+    CloseHandle(hFile);
+}
+
 void inner_change_contrast(
     const string &input,
     const string &output,
@@ -96,64 +178,9 @@ void inner_change_contrast(
         throw invalid_argument("factor must be in range (0, 2]");
     }
 
-    // Load the image from file using memory-mapped files
-    HANDLE hFile = CreateFile(
-        input.c_str(),
-        GENERIC_READ,
-        0,
-        nullptr,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        nullptr
-    );
-    if (hFile == INVALID_HANDLE_VALUE) {
-      CloseHandle(hFile);
-      throw invalid_argument("failed to open file");
-    }
-
-    HANDLE hMapFile = CreateFileMapping(
-        hFile,
-        nullptr,
-        PAGE_READONLY,
-        0,
-        0,
-        nullptr
-    );
-    if (hMapFile == nullptr) {
-        CloseHandle(hFile);
-        CloseHandle(hMapFile);
-        throw invalid_argument("failed to create file mapping");
-    }
-
-    void* map = MapViewOfFile(
-        hMapFile,
-        FILE_MAP_READ,
-        0,
-        0,
-        0
-    );
-
-    Mat img = imdecode(
-        Mat(1, GetFileSize(hFile, nullptr), CV_8UC1, map),
-        IMREAD_COLOR
-    );
-    if (img.empty()) {
-        UnmapViewOfFile(map);
-        CloseHandle(hMapFile);
-        CloseHandle(hFile);
-        throw invalid_argument("failed to load image");
-    }
-
-    // Adjust contrast using multiple threads
+    Mat img = read_img(input);
     adjust_contrast_multi_threaded(&img, factor, numThreads);
-
-    // Save the adjusted image
-    imwrite(output, img);
-
-    // Clean up
-    UnmapViewOfFile(map);
-    CloseHandle(hMapFile);
-    CloseHandle(hFile);
+    write_img(output, img);
 }
 
 void change_contrast_many(
