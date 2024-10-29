@@ -1,8 +1,6 @@
 #include "common/header.h"
 using namespace std;
 
-// Import the function from the common library
-
 int main()
 {
     int numThreads;
@@ -18,7 +16,7 @@ int main()
     cout << "Enter the output image path: ";
     cin >> output;
 
-    change_image_contrast(input.c_str(), output.c_str(), factor, numThreads);
+    change_contrast(input.c_str(), output.c_str(), factor, numThreads);
 
     return 0;
 }
