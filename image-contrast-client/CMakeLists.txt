@@ -25,19 +25,21 @@ endif ()
 
 find_package(OpenCV REQUIRED)
 
-include_directories(
+target_include_directories(
         ${PROJECT_NAME}
         PRIVATE
         ${IMAGE_CONTRAST_DIR}
         ${OpenCV_INCLUDE_DIRS}
 )
-link_directories(
+
+target_link_directories(
         ${PROJECT_NAME}
         PRIVATE
         ${IMAGE_CONTRAST_BIN}
 )
-link_libraries(
+target_link_libraries(
         ${PROJECT_NAME}
         PRIVATE
         ${OpenCV_LIBS}
+        image_contrast
 )

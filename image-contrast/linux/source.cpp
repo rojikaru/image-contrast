@@ -152,7 +152,7 @@ void change_contrast(
     const char* input,
     const char* output,
     double factor,
-    int numThreads = 1
+    int numThreads
 )
 {
     change_contrast_many(vector{string(input)}, vector{string(output)}, factor, numThreads);
@@ -161,8 +161,8 @@ void change_contrast(
 void change_image_contrast(
     const char* input,
     const char* output,
-    double factor = 1.0,
-    int numThreads = 1
+    double factor,
+    int numThreads
 )
 IMAGE_CONTRAST_LIB_API
 IMAGE_CONTRAST_ALIAS("change_contrast");

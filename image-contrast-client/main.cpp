@@ -18,7 +18,7 @@ int main()
     cout << "Enter the output image path: ";
     cin >> output;
 
-    change_contrast(input.c_str(), output.c_str(), factor, numThreads);
+    change_image_contrast(input.c_str(), output.c_str(), factor, numThreads);
 
     return 0;
 }

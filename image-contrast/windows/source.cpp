@@ -159,7 +159,7 @@ void change_contrast(
     const char *input,
     const char *output,
     double factor,
-    int numThreads = 1
+    int numThreads
 ) {
     change_contrast_many(vector{string(input)}, vector{string(output)}, factor, numThreads);
 }
