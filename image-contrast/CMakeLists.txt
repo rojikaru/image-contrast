@@ -3,7 +3,7 @@ project(image_contrast)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(IMAGE_CONTRAST_DLL_EXPORTS False)
+set(IMAGE_CONTRAST_DLL_EXPORTS True)
 
 if (WIN32)
     set(OpenCV_DIR "D:/opencv/build")

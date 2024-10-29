@@ -8,9 +8,13 @@
 #include <string>
 #include <stdexcept>
 #include <iostream>
+#include <opencv2/opencv.hpp>
 
 #include <Windows.h>
-#include <opencv2/opencv.hpp>
+#include <io.h>
+#include <fcntl.h>
+
+#define ftruncate _chsize_s
 
 using namespace cv;
 using namespace std;

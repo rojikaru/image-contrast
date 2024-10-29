@@ -86,6 +86,23 @@ void adjust_contrast_multi_threaded(Mat *img, double factor, int numThreads = 1)
     }
 }
 
+void resizeFile(HANDLE hFile, long long newSize) {
+    // Convert HANDLE to file descriptor
+    int fileDesc = _open_osfhandle(reinterpret_cast<intptr_t>(hFile), _O_RDWR);
+    if (fileDesc == -1) {
+        printf("Failed to open file descriptor\n");
+        return;
+    }
+
+    // Resize the file using _chsize_s
+    if (_chsize_s(fileDesc, newSize) != 0) {
+        printf("Failed to resize file\n");
+    }
+
+    // Close the file descriptor
+    _close(fileDesc);
+}
+
 // Load the image from a file
 Mat read_img(const string &path) {
     HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -141,12 +158,15 @@ void write_img(const string &path, const Mat &img) {
         throw std::runtime_error("Failed to encode image");
     }
 
-    HANDLE hFile = CreateFileA(path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE hFile = CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (hFile == INVALID_HANDLE_VALUE) {
         throw std::runtime_error("Failed to open output file");
     }
 
-    HANDLE hMapping = CreateFileMapping(hFile, nullptr, PAGE_READWRITE, 0, buf.size(), nullptr);
+    // Set the size of the file to the size of the encoded image
+    resizeFile(hFile, buf.size());
+
+    HANDLE hMapping = CreateFileMapping(hFile, nullptr, PAGE_READWRITE, 0, 0, nullptr);
     if (!hMapping) {
         CloseHandle(hFile);
         throw std::runtime_error("Failed to create file mapping");
@@ -169,10 +189,10 @@ void write_img(const string &path, const Mat &img) {
 }
 
 void inner_change_contrast(
-    const string &input,
-    const string &output,
-    double factor,
-    int numThreads = 1
+        const string &input,
+        const string &output,
+        double factor,
+        int numThreads = 1
 ) {
     if (factor <= 0 || factor > 2) {
         throw invalid_argument("factor must be in range (0, 2]");
@@ -180,14 +200,19 @@ void inner_change_contrast(
 
     Mat img = read_img(input);
     adjust_contrast_multi_threaded(&img, factor, numThreads);
-    write_img(output, img);
+    try {
+        write_img(output, img);
+    } catch (const exception &e) {
+        cerr << e.what() << endl;
+        imwrite(output, img);
+    }
 }
 
 void change_contrast_many(
-    const vector<string> &input,
-    const vector<string> &output,
-    double factor,
-    int numThreads
+        const vector<string> &input,
+        const vector<string> &output,
+        double factor,
+        int numThreads
 ) {
     if (input.size() != output.size()) {
         throw invalid_argument("input and output size mismatch");
@@ -206,11 +231,11 @@ void change_contrast_many(
                 [](LPVOID param) -> DWORD {
                     auto args = *static_cast<tuple<string, string, double, int> *>(param);
                     inner_change_contrast(
-                        get<0>(args),
-                        get<1>(args),
-                        get<2>(args),
-                        get<3>(args)
-                        );
+                            get<0>(args),
+                            get<1>(args),
+                            get<2>(args),
+                            get<3>(args)
+                    );
                     return 0;
                 },
                 &args[i],
@@ -231,19 +256,24 @@ void change_contrast_many(
 }
 
 void change_contrast(
-    const char *input,
-    const char *output,
-    double factor,
-    int numThreads
+        const char *input,
+        const char *output,
+        double factor,
+        int numThreads
 ) {
-    change_contrast_many(vector{string(input)}, vector{string(output)}, factor, numThreads);
+    change_contrast_many(
+            vector{string(input)},
+            vector{string(output)},
+            factor,
+            numThreads
+    );
 }
 
 void CALLBACK ChangeContrast(
-    HWND hwnd,
-    HINSTANCE hinst,
-    LPSTR lpszCmdLine,
-    int nCmdShow
+        HWND hwnd,
+        HINSTANCE hinst,
+        LPSTR lpszCmdLine,
+        int nCmdShow
 ) {
     // Parse the command line arguments
     vector<string> args;
@@ -259,10 +289,10 @@ void CALLBACK ChangeContrast(
     }
 
     change_contrast_many(
-        vector{args[0]},
-        vector{args[1]},
-        stod(args[2]),
-        stoi(args[3])
+            vector{args[0]},
+            vector{args[1]},
+            stod(args[2]),
+            stoi(args[3])
     );
 }
 
