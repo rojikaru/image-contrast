@@ -2,6 +2,7 @@
 #if linux_defined
 
 #include "libs.h"
+#include "../image_contrast.h"
 
 struct ThreadArgs
 {
