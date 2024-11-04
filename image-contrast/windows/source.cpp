@@ -36,9 +36,9 @@ DWORD WINAPI adjust_contrast_thread(LPVOID lpParameter) {
             auto &color = img->at<Vec3b>(y, x);
 
             // Adjust RGB values based on the contrast factor
-            color[2] = clamp(int((color[2] - 128) * factor) + 128, 0, 255); // R
-            color[1] = clamp(int((color[1] - 128) * factor) + 128, 0, 255); // G
-            color[0] = clamp(int((color[0] - 128) * factor) + 128, 0, 255); // B
+            color[2] = clamp(static_cast<int>((color[2] - 128) * factor) + 128, 0, 255); // R
+            color[1] = clamp(static_cast<int>((color[1] - 128) * factor) + 128, 0, 255); // G
+            color[0] = clamp(static_cast<int>((color[0] - 128) * factor) + 128, 0, 255); // B
         }
     }
 
@@ -63,17 +63,17 @@ void adjust_contrast_multi_threaded(Mat *img, double factor, int numThreads = 1)
     vector<HANDLE> threads(numThreads);
     for (int i = 0; i < numThreads; ++i) {
         threads[i] = CreateThread(
-                nullptr,                    // Default security attributes
-                0,                          // Default stack size
-                adjust_contrast_thread,     // Thread function
-                new ThreadArgs{
-                        img,
-                        i * rowsPerThread,
-                        (i == numThreads - 1) ? height : (i + 1) * rowsPerThread,
-                        factor,
-                },                          // Thread parameters
-                0,                          // Default creation flags
-                nullptr                     // Don't need the thread identifier
+            nullptr, // Default security attributes
+            0, // Default stack size
+            adjust_contrast_thread, // Thread function
+            new ThreadArgs{
+                img,
+                i * rowsPerThread,
+                (i == numThreads - 1) ? height : (i + 1) * rowsPerThread,
+                factor,
+            }, // Thread parameters
+            0, // Default creation flags
+            nullptr // Don't need the thread identifier
         );
     }
 
@@ -84,23 +84,6 @@ void adjust_contrast_multi_threaded(Mat *img, double factor, int numThreads = 1)
     for (HANDLE hThread: threads) {
         CloseHandle(hThread);
     }
-}
-
-void resizeFile(HANDLE hFile, long long newSize) {
-    // Convert HANDLE to file descriptor
-    int fileDesc = _open_osfhandle(reinterpret_cast<intptr_t>(hFile), _O_RDWR);
-    if (fileDesc == -1) {
-        printf("Failed to open file descriptor\n");
-        return;
-    }
-
-    // Resize the file using _chsize_s
-    if (_chsize_s(fileDesc, newSize) != 0) {
-        printf("Failed to resize file\n");
-    }
-
-    // Close the file descriptor
-    _close(fileDesc);
 }
 
 // Load the image from a file
@@ -134,7 +117,10 @@ Mat read_img(const string &path) {
         throw std::runtime_error("Failed to map input file");
     }
 
-    Mat img = imdecode(Mat(1, fileSize, CV_8UC1, map), IMREAD_COLOR);
+    Mat img = imdecode(
+        Mat(1, static_cast<long>(fileSize), CV_8UC1, map),
+        IMREAD_COLOR
+    );
 
     // Clean up
     UnmapViewOfFile(map);
@@ -158,25 +144,49 @@ void write_img(const string &path, const Mat &img) {
         throw std::runtime_error("Failed to encode image");
     }
 
-    HANDLE hFile = CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE hFile = CreateFile(
+        path.c_str(),
+        GENERIC_WRITE | GENERIC_READ,
+        0,
+        nullptr,
+        CREATE_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL,
+        nullptr
+    );
     if (hFile == INVALID_HANDLE_VALUE) {
         throw std::runtime_error("Failed to open output file");
     }
 
     // Set the size of the file to the size of the encoded image
-    resizeFile(hFile, buf.size());
+    SetFilePointer(
+        hFile,
+        static_cast<long>(buf.size()),
+        nullptr,
+        FILE_BEGIN
+    );
+    if (!SetEndOfFile(hFile)) {
+        CloseHandle(hFile);
+        throw runtime_error("Failed to set end of file");
+    }
 
-    HANDLE hMapping = CreateFileMapping(hFile, nullptr, PAGE_READWRITE, 0, 0, nullptr);
+    HANDLE hMapping = CreateFileMapping(
+        hFile,
+        nullptr,
+        PAGE_READWRITE,
+        0,
+        buf.size(),
+        nullptr
+    );
     if (!hMapping) {
         CloseHandle(hFile);
-        throw std::runtime_error("Failed to create file mapping");
+        throw std::runtime_error("Failed to create file mapping: " + to_string(GetLastError()));
     }
 
     void *map = MapViewOfFile(hMapping, FILE_MAP_WRITE, 0, 0, 0);
     if (!map) {
         CloseHandle(hMapping);
         CloseHandle(hFile);
-        throw std::runtime_error("Failed to map output file");
+        throw std::runtime_error("Failed to map output file" + to_string(GetLastError()));
     }
 
     // Copy the encoded image data to the mapped memory
@@ -189,10 +199,10 @@ void write_img(const string &path, const Mat &img) {
 }
 
 void inner_change_contrast(
-        const string &input,
-        const string &output,
-        double factor,
-        int numThreads = 1
+    const string &input,
+    const string &output,
+    double factor,
+    int numThreads = 1
 ) {
     if (factor <= 0 || factor > 2) {
         throw invalid_argument("factor must be in range (0, 2]");
@@ -200,19 +210,14 @@ void inner_change_contrast(
 
     Mat img = read_img(input);
     adjust_contrast_multi_threaded(&img, factor, numThreads);
-    try {
-        write_img(output, img);
-    } catch (const exception &e) {
-        cerr << e.what() << endl;
-        imwrite(output, img);
-    }
+    write_img(output, img);
 }
 
 void change_contrast_many(
-        const vector<string> &input,
-        const vector<string> &output,
-        double factor,
-        int numThreads
+    const vector<string> &input,
+    const vector<string> &output,
+    double factor,
+    int numThreads
 ) {
     if (input.size() != output.size()) {
         throw invalid_argument("input and output size mismatch");
@@ -221,26 +226,26 @@ void change_contrast_many(
     initLog();
 
     vector<HANDLE> threads(input.size());
-    vector<tuple<string, string, double, int>> args(input.size());
+    vector<tuple<string, string, double, int> > args(input.size());
 
     for (size_t i = 0; i < input.size(); ++i) {
         args[i] = make_tuple(input[i], output[i], factor, numThreads);
         threads[i] = CreateThread(
-                nullptr,
-                0,
-                [](LPVOID param) -> DWORD {
-                    auto args = *static_cast<tuple<string, string, double, int> *>(param);
-                    inner_change_contrast(
-                            get<0>(args),
-                            get<1>(args),
-                            get<2>(args),
-                            get<3>(args)
-                    );
-                    return 0;
-                },
-                &args[i],
-                0,
-                nullptr
+            nullptr,
+            0,
+            [](LPVOID param) -> DWORD {
+                auto args = *static_cast<tuple<string, string, double, int> *>(param);
+                inner_change_contrast(
+                    get<0>(args),
+                    get<1>(args),
+                    get<2>(args),
+                    get<3>(args)
+                );
+                return 0;
+            },
+            &args[i],
+            0,
+            nullptr
         );
     }
 
@@ -256,24 +261,24 @@ void change_contrast_many(
 }
 
 void change_contrast(
-        const char *input,
-        const char *output,
-        double factor,
-        int numThreads
+    const char *input,
+    const char *output,
+    double factor,
+    int numThreads
 ) {
     change_contrast_many(
-            vector{string(input)},
-            vector{string(output)},
-            factor,
-            numThreads
+        vector{string(input)},
+        vector{string(output)},
+        factor,
+        numThreads
     );
 }
 
 void CALLBACK ChangeContrast(
-        HWND hwnd,
-        HINSTANCE hinst,
-        LPSTR lpszCmdLine,
-        int nCmdShow
+    HWND hwnd,
+    HINSTANCE hinst,
+    LPSTR lpszCmdLine, // NOLINT(*-non-const-parameter)
+    int nCmdShow
 ) {
     // Parse the command line arguments
     vector<string> args;
@@ -289,10 +294,10 @@ void CALLBACK ChangeContrast(
     }
 
     change_contrast_many(
-            vector{args[0]},
-            vector{args[1]},
-            stod(args[2]),
-            stoi(args[3])
+        vector{args[0]},
+        vector{args[1]},
+        stod(args[2]),
+        stoi(args[3])
     );
 }
 
